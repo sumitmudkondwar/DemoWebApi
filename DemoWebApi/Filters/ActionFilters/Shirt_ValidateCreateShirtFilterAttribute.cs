@@ -1,11 +1,11 @@
-﻿using DemoWebApi.Models;
-using DemoWebApi.Models.Repositories;
+﻿using DemoWebApi.Data;
+using DemoWebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace DemoWebApi.Filters.ActionFilters
 {
-    public class Shirt_ValidateCreateShirtFilterAttribute : ActionFilterAttribute
+    public class Shirt_ValidateCreateShirtFilterAttribute(ApplicationDbContext db) : ActionFilterAttribute
     {
         public override void OnActionExecuting(ActionExecutingContext context)
         {
@@ -24,7 +24,21 @@ namespace DemoWebApi.Filters.ActionFilters
             }
             else
             {
-                var existingShirt = ShirtRepository.GetShirtByProperties(shirt.Brand, shirt.Gender, shirt.Color, shirt.Size);
+                var existingShirt = db.Shirt.FirstOrDefault(x =>
+                    !string.IsNullOrWhiteSpace(shirt.Brand) &&
+                    !string.IsNullOrWhiteSpace(x.Brand) &&
+                    x.Brand.ToLower() == shirt.Brand.ToLower() &&
+                    !string.IsNullOrWhiteSpace(shirt.Gender) &&
+                    !string.IsNullOrWhiteSpace(x.Gender) &&
+                    x.Gender.ToLower() == shirt.Gender.ToLower() &&
+                    !string.IsNullOrWhiteSpace(shirt.Color) &&
+                    !string.IsNullOrWhiteSpace(x.Color) &&
+                    x.Color.ToLower() == shirt.Color.ToLower() &&
+                    shirt.Size.HasValue &&
+                    x.Size.HasValue &&
+                    shirt.Size.Value == x.Size.Value
+                    );
+
                 if (existingShirt != null)
                 {
                     context.ModelState.AddModelError("Shirt", "Shirt already exists.");
