@@ -1,10 +1,11 @@
-﻿using DemoWebApi.Models.Repositories;
+﻿using DemoWebApi.Data;
+using DemoWebApi.Models.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace DemoWebApi.Filters.ActionFilters
 {
-    public class Shirt_ValidateShirtIdFilterAttribute : ActionFilterAttribute
+    public class Shirt_ValidateShirtIdFilterAttribute(ApplicationDbContext db) : ActionFilterAttribute
     {
         public override void OnActionExecuting(ActionExecutingContext context)
         {
@@ -23,14 +24,23 @@ namespace DemoWebApi.Filters.ActionFilters
                     };
                     context.Result = new BadRequestObjectResult(problemDetails);
                 }
-                else if (!ShirtRepository.ShirtExists(shirtId.Value))
+                else
                 {
-                    context.ModelState.AddModelError("ShirtId", "Shirt doesn't exists");
-                    var problemDetails = new ValidationProblemDetails(context.ModelState)
+                    var shirt = db.Shirt.Find(shirtId.Value);
+
+                    if (shirt == null)
                     {
-                        Status = StatusCodes.Status404NotFound
-                    };
-                    context.Result = new NotFoundObjectResult(problemDetails);
+                        context.ModelState.AddModelError("ShirtId", "Shirt doesn't exists");
+                        var problemDetails = new ValidationProblemDetails(context.ModelState)
+                        {
+                            Status = StatusCodes.Status404NotFound
+                        };
+                        context.Result = new NotFoundObjectResult(problemDetails);
+                    }
+                    else
+                    {
+                        context.HttpContext.Items["shirt"] = shirt;
+                    }
                 }
             }
         }

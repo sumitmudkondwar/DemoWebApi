@@ -1,4 +1,5 @@
-﻿using DemoWebApi.Filters;
+﻿using DemoWebApi.Data;
+using DemoWebApi.Filters;
 using DemoWebApi.Filters.ActionFilters;
 using DemoWebApi.Filters.ExceptionFilters;
 using DemoWebApi.Models;
@@ -9,19 +10,19 @@ namespace DemoWebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ShirtsController: ControllerBase
+    public class ShirtsController(ApplicationDbContext db) : ControllerBase
     {
         [HttpGet]
         public IActionResult GetShirts()
         {
-            return Ok(ShirtRepository.GetShirts());
+            return Ok(db.Shirt.ToList());
         }
 
         [HttpGet("{id}")]
-        [Shirt_ValidateShirtIdFilter]
+        [TypeFilter(typeof(Shirt_ValidateShirtIdFilterAttribute))]
         public IActionResult GetShirtsByID(int id)
         {
-            return Ok(ShirtRepository.GetShirtById(id));
+            return Ok(HttpContext.Items["shirt"]);
         }
 
         [HttpPost]
@@ -34,7 +35,7 @@ namespace DemoWebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        [Shirt_ValidateShirtIdFilter]
+        [TypeFilter(typeof(Shirt_ValidateShirtIdFilterAttribute))]
         [Shirt_ValidateUpdateShirtFilter]
         [Shirt_HandleUpdateExceptionFilter]
         public IActionResult UpdateShirts(int id, Shirt shirt)
@@ -45,7 +46,7 @@ namespace DemoWebApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Shirt_ValidateShirtIdFilter]
+        [TypeFilter(typeof(Shirt_ValidateShirtIdFilterAttribute))]
         public IActionResult DeleteShirts(int id)
         {
             var shirt = ShirtRepository.GetShirtById(id);
