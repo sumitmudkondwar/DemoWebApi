@@ -7,9 +7,10 @@
             new Application()
             {
                 ApplicationId = 1,
-                ApplicationName = "Test",
+                ApplicationName = "MVCWebApp",
                 ClientId = "61333E0C-9E2F-4120-9EF6-DCF12706D37B",
-                Secret = "1AB98808-BCE2-42CC-9C58-428AE821DB21"
+                Secret = "1AB98808-BCE2-42CC-9C58-428AE821DB21",
+                Scopes = "read,write"
             }
         };
 
