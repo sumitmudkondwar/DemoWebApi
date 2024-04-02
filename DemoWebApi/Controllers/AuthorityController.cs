@@ -1,4 +1,5 @@
 ﻿using DemoWebApi.Authority;
+using DemoWebApi.Filters.AuthFilters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,13 +14,13 @@ namespace DemoWebApi.Controllers
         [HttpPost("auth")]
         public IActionResult Authenticate([FromBody] AppCredential appCredential)
         {
-            if (AppRepository.Authenticate(appCredential.ClientId, appCredential.Secret))
+            if (Authenticator.Authenticate(appCredential.ClientId, appCredential.Secret))
             {
                 var expiresAt = DateTime.UtcNow.AddMinutes(10);
 
                 return Ok(new
                 {
-                    access_token = CreateToken(appCredential.ClientId, expiresAt),
+                    access_token = Authenticator.CreateToken(appCredential.ClientId, expiresAt, configuration.GetValue<string>("SecretKey")),
                     expires_at = expiresAt
                 });
             }
@@ -32,32 +33,6 @@ namespace DemoWebApi.Controllers
                 };
                 return new UnauthorizedObjectResult(problemDetails);
             }
-        }
-
-        private string CreateToken(string clientId, DateTime expiresAt)
-        {
-            
-            var app = AppRepository.GetApplicationByClientId(clientId);
-
-            var claims = new List<Claim>
-            {
-                new("AppName", app?.ApplicationName??string.Empty),
-                new("Read", (app?.Scopes??string.Empty).Contains("read")?"true":"false"),
-                new("Write", (app?.Scopes??string.Empty).Contains("write")?"true":"false")
-            };
-
-            var secretKey = Encoding.ASCII.GetBytes(configuration.GetValue<string>("SecretKey"));
-
-            var jwt = new JwtSecurityToken(
-                signingCredentials: new SigningCredentials(
-                    new SymmetricSecurityKey(secretKey),
-                    SecurityAlgorithms.HmacSha256Signature),
-                claims: claims,
-                expires: expiresAt,
-                notBefore: DateTime.UtcNow
-                );
-
-            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
     }
 }

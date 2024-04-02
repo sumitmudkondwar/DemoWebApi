@@ -1,6 +1,7 @@
 ﻿using DemoWebApi.Data;
 using DemoWebApi.Filters;
 using DemoWebApi.Filters.ActionFilters;
+using DemoWebApi.Filters.AuthFilters;
 using DemoWebApi.Filters.ExceptionFilters;
 using DemoWebApi.Models;
 using DemoWebApi.Models.Repositories;
@@ -10,6 +11,7 @@ namespace DemoWebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [JwtTokenAuthFilter]
     public class ShirtsController(ApplicationDbContext db) : ControllerBase
     {
         [HttpGet]
