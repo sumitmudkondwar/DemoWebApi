@@ -5,7 +5,7 @@ using WebApp.Authority;
 
 namespace WebApp.Data
 {
-    public class WebApiExecuter(IHttpClientFactory httpClientFactory, IConfiguration configuration) : IWebApiExecuter
+    public class WebApiExecuter(IHttpClientFactory httpClientFactory, IConfiguration configuration, IHttpContextAccessor httpContextAccessor) : IWebApiExecuter
     {
         private const string apiName = "ShirtsApi";
         private const string AuthApiName = "AuthorityApi";
@@ -59,24 +59,35 @@ namespace WebApp.Data
 
         private async Task AddJwtToHeader(HttpClient httpClient)
         {
-            var clientId = configuration.GetValue<string>("ClientId");
-            var secret = configuration.GetValue<string>("Secret");
+            JwtToken? token = null;
+            string? strToken = httpContextAccessor.HttpContext?.Session.GetString("access_token");
 
-            var authoClient = httpClientFactory.CreateClient(AuthApiName);
-            var response = await authoClient.PostAsJsonAsync("auth", new AppCredential
+            if (!string.IsNullOrWhiteSpace(strToken))
             {
-                ClientId = clientId,
-                Secret = secret
-            });
+                token = JsonConvert.DeserializeObject<JwtToken>(strToken);
+            }
 
-            response.EnsureSuccessStatusCode();
+            if (token == null || token.ExpiresAt <= DateTime.UtcNow)
+            {
+                var clientId = configuration.GetValue<string>("ClientId");
+                var secret = configuration.GetValue<string>("Secret");
 
-            string strToken = await response.Content.ReadAsStringAsync();
-            var token = JsonConvert.DeserializeObject<JwtToken>(strToken);
+                var authoClient = httpClientFactory.CreateClient(AuthApiName);
+                var response = await authoClient.PostAsJsonAsync("auth", new AppCredential
+                {
+                    ClientId = clientId,
+                    Secret = secret
+                });
+
+                response.EnsureSuccessStatusCode();
+
+                strToken = await response.Content.ReadAsStringAsync();
+                token = JsonConvert.DeserializeObject<JwtToken>(strToken);
+
+                httpContextAccessor.HttpContext.Session.SetString("access_token", strToken);
+            }
 
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token?.AccessToken);
-
-
         }
     }
 }

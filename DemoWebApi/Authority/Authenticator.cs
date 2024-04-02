@@ -24,10 +24,17 @@ namespace DemoWebApi.Authority
 
             var claims = new List<Claim>
             {
-                new("AppName", app?.ApplicationName??string.Empty),
-                new("Read", (app?.Scopes??string.Empty).Contains("read")?"true":"false"),
-                new("Write", (app?.Scopes??string.Empty).Contains("write")?"true":"false")
+                new("AppName", app?.ApplicationName??string.Empty)
             };
+
+            var scopes = app?.Scopes.Split(",");
+            if (scopes != null && scopes.Length > 0)
+            {
+                foreach(var scope in scopes)
+                {
+                    claims.Add(new Claim(scope.ToLower(), "true"));
+                }
+            }
 
             var secretKey = Encoding.ASCII.GetBytes(strSecretKey);
 
@@ -43,9 +50,9 @@ namespace DemoWebApi.Authority
             return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
 
-        public static bool VerifyToken(string token, string strSecretKey)
+        public static IEnumerable<Claim>? VerifyToken(string token, string strSecretKey)
         {
-            if (string.IsNullOrWhiteSpace(token)) return false;
+            if (string.IsNullOrWhiteSpace(token)) return null;
 
             if(token.StartsWith("Bearer"))
             {
@@ -68,17 +75,25 @@ namespace DemoWebApi.Authority
                     ClockSkew = TimeSpan.Zero
                 },
                 out securityToken) ;
+
+                if (securityToken != null)
+                {
+                    var tokenObject = tokenHandler.ReadJwtToken(token);
+                    return tokenObject.Claims ?? (new List<Claim>());
+                }
+                else
+                {
+                    return null;
+                }
             }
             catch (SecurityTokenException ex)
             {
-                return false;
+                return null;
             }
             catch
             {
                 throw;
             }
-
-            return securityToken != null;
         }
     }
 }
