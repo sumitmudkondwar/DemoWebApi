@@ -10,6 +10,8 @@ namespace DemoWebApi.Models
         [Required]
         public string? Brand { get; set; }
 
+        public string? Description { get; set; }
+
         [Required]
         public string? Color { get; set; }
 
@@ -21,5 +23,9 @@ namespace DemoWebApi.Models
         
         public double price { get; set; }
 
+        public bool ValidationDescription()
+        {
+            return !string.IsNullOrEmpty(Description);
+        }
     }
 }

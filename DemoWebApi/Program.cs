@@ -1,11 +1,20 @@
 using DemoWebApi.Data;
 using DemoWebApi.Filters.OperationFilter;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
+builder.Services.AddApiVersioning(options => {
+    options.ReportApiVersions = true;
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new ApiVersion(1, 0);
+    //options.ApiVersionReader = new HeaderApiVersionReader("X-API-Version");
+});
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
 {

@@ -2,15 +2,16 @@
 using DemoWebApi.Data;
 using DemoWebApi.Filters;
 using DemoWebApi.Filters.ActionFilters;
+using DemoWebApi.Filters.ActionFilters.V2;
 using DemoWebApi.Filters.AuthFilters;
 using DemoWebApi.Filters.ExceptionFilters;
 using DemoWebApi.Models;
 using DemoWebApi.Models.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DemoWebApi.Controllers
+namespace DemoWebApi.Controllers.V2
 {
-    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
     [ApiController]
     [Route("api/v{v:apiVersion}/[controller]")]
     [JwtTokenAuthFilter]
@@ -33,6 +34,7 @@ namespace DemoWebApi.Controllers
 
         [HttpPost]
         [TypeFilter(typeof(Shirt_ValidateCreateShirtFilterAttribute))]
+        [Shirt_EnsureDescriptionIsPresentFilter]
         [RequiredClaim("write", "true")]
         public IActionResult CreateShirts([FromBody]Shirt shirt)
         {
@@ -46,6 +48,7 @@ namespace DemoWebApi.Controllers
         [TypeFilter(typeof(Shirt_ValidateShirtIdFilterAttribute))]
         [Shirt_ValidateUpdateShirtFilter]
         [TypeFilter(typeof(Shirt_HandleUpdateExceptionFilterAttribute))]
+        [Shirt_EnsureDescriptionIsPresentFilter]
         [RequiredClaim("write", "true")]
         public IActionResult UpdateShirts(int id, Shirt shirt)
         {

@@ -8,6 +8,7 @@ using System.Text;
 
 namespace DemoWebApi.Controllers
 {
+    [ApiVersion("1.0")]
     [ApiController]
     public class AuthorityController(IConfiguration configuration): ControllerBase
     {
