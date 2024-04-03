@@ -13,7 +13,7 @@ namespace DemoWebApi.Controllers.V2
 {
     [ApiVersion("2.0")]
     [ApiController]
-    [Route("api/v{v:apiVersion}/[controller]")]
+    //[Route("api/v{v:apiVersion}/[controller]")]
     [JwtTokenAuthFilter]
     public class ShirtsController(ApplicationDbContext db) : ControllerBase
     {
@@ -60,6 +60,7 @@ namespace DemoWebApi.Controllers.V2
                 shirtToUpdate.Size = shirt.Size;
                 shirtToUpdate.Color = shirt.Color;
                 shirtToUpdate.Gender = shirt.Gender;
+                shirtToUpdate.Description = shirt.Description;
             }
             db.SaveChanges();
 

@@ -12,7 +12,7 @@ namespace DemoWebApi.Controllers
 {
     [ApiVersion("1.0")]
     [ApiController]
-    [Route("api/v{v:apiVersion}/[controller]")]
+    //[Route("api/v{v:apiVersion}/[controller]")]
     [JwtTokenAuthFilter]
     public class ShirtsController(ApplicationDbContext db) : ControllerBase
     {
